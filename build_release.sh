@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default source path
-DEFAULT_SRC="/mnt/f/sources/chromium/src"
+DEFAULT_SRC="/home/dev/chromium/src"
 
 # Check if an argument is provided, otherwise use the default
 if [[ -n "$1" ]]; then
@@ -30,14 +30,14 @@ if [[ "$ARCHITECTURE" == "arm64" ]]; then
    BUILD_FOLDER="Release_arm64"
 elif [[ "$ARCHITECTURE" == "x64" ]]; then
    echo "Building for x64"
-   BUILD_FOLDER="Release_X64"
+   BUILD_FOLDER="Release_x64"
 else
    echo "Unknown architecture; EXITING"
    exit 1
 fi
 
-VERSION_FILE="${SRC}/chrome/VERSION"
-
+VERSION_FILE="VERSION"
+cd ..
 # Check if the version file exists in the correct location
 if [[ -f ${VERSION_FILE} ]]; then
     echo "Updating version file: ${VERSION_FILE}"
@@ -56,7 +56,7 @@ if [[ -f ${VERSION_FILE} ]]; then
     sed -i "s/^BUILD.*$/BUILD=${build_version}/" ${VERSION_FILE}
     echo "Updated BUILD version to ${build_version}"
 
-    cp ${VERSION_FILE} ~/chromium/VERSION
+    cp ${VERSION_FILE} ~/chromium/src/VERSION
     
     echo "Current version details:"
     cat ${VERSION_FILE}
@@ -64,9 +64,11 @@ else
     echo "WARNING: Version file not found in ${VERSION_FILE}. Skipping version update."
 fi
 
+cd "${SRC}" 
+
 # Build
 echo "Starting build process. This is a very long process..."
-autoninja -C out/${BUILD_FOLDER} monochrome_public_bundle
+autoninja -C out/${BUILD_FOLDER} chrome_public_bundle
 if [[ $? -ne 0 ]]; then
     echo "Build failed. Exiting."
     exit 1
@@ -74,7 +76,7 @@ fi
 echo "Build completed successfully."
 
 # Sign
-AAB_FILE="${SRC}/out/${BUILD_FOLDER}/apks/MonochromePublic6432.aab"
+AAB_FILE="${SRC}/out/${BUILD_FOLDER}/apks/ChromePublic.aab"
 
 if [[ -f ${AAB_FILE} ]]; then
     echo "Signing AAB file: ${AAB_FILE}"
@@ -92,3 +94,4 @@ else
 fi
 
 echo "Script execution completed successfully!"
+
